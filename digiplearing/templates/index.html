@@ -1,0 +1,244 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <style>
+    :root {
+      --primary-color: #0DB47E;
+      --primary-hover: #0aa371;
+      --text-color: #f0f0f0;
+      --bg-color: #121212;
+      --card-bg: #1e1e1e;
+      --input-bg: #2d2d2d;
+      --border-color: #3a3a3a;
+    }
+    
+    body {
+      font-family: 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+      background-color: var(--bg-color);
+      color: var(--text-color);
+      padding: 0;
+      margin: 0;
+      line-height: 1.6;
+    }
+    
+    .container {
+      max-width: 800px;
+      margin: 0 auto;
+      padding: 2rem;
+    }
+    
+    header {
+      text-align: center;
+      margin-bottom: 2rem;
+      padding-bottom: 1rem;
+      border-bottom: 1px solid var(--border-color);
+    }
+    
+    h1 {
+      color: var(--primary-color);
+      margin-bottom: 0.5rem;
+      font-size: 2.2rem;
+    }
+    
+    .subtitle {
+      color: #aaa;
+      font-size: 1.1rem;
+    }
+    
+    .recommendation-card {
+      background-color: var(--card-bg);
+      border-radius: 8px;
+      padding: 2rem;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+      margin-bottom: 2rem;
+    }
+    
+    .form-group {
+      margin-bottom: 1.5rem;
+    }
+    
+    label {
+      display: block;
+      margin-bottom: 0.5rem;
+      font-weight: 500;
+    }
+    
+    input {
+      width: 100%;
+      padding: 12px;
+      border: 1px solid var(--border-color);
+      border-radius: 6px;
+      background-color: var(--input-bg);
+      color: var(--text-color);
+      font-size: 1rem;
+      box-sizing: border-box;
+    }
+    
+    input:focus {
+      outline: none;
+      border-color: var(--primary-color);
+      box-shadow: 0 0 0 2px rgba(13, 180, 126, 0.2);
+    }
+    
+    button {
+      background-color: var(--primary-color);
+      color: white;
+      border: none;
+      padding: 12px 24px;
+      border-radius: 6px;
+      font-size: 1rem;
+      font-weight: 600;
+      cursor: pointer;
+      width: 100%;
+      transition: background-color 0.2s;
+    }
+    
+    button:hover {
+      background-color: var(--primary-hover);
+    }
+    
+    #results {
+      margin-top: 2rem;
+      padding: 1.5rem;
+      background-color: var(--card-bg);
+      border-radius: 8px;
+      display: none;
+    }
+    
+    #results h3 {
+      color: var(--primary-color);
+      margin-top: 0;
+    }
+    
+    #results ul {
+      padding-left: 1.5rem;
+      margin-bottom: 0;
+    }
+    
+    #results li {
+      margin-bottom: 0.5rem;
+    }
+    
+    .loading {
+      display: none;
+      text-align: center;
+      margin: 1rem 0;
+    }
+    
+    .spinner {
+      border: 3px solid rgba(255, 255, 255, 0.1);
+      border-radius: 50%;
+      border-top: 3px solid var(--primary-color);
+      width: 20px;
+      height: 20px;
+      animation: spin 1s linear infinite;
+      display: inline-block;
+      vertical-align: middle;
+      margin-right: 8px;
+    }
+    
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+    
+    footer {
+      text-align: center;
+      margin-top: 3rem;
+      color: #666;
+      font-size: 0.9rem;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+  
+    <div class="recommendation-card">
+      <h2>Get Your Personalized Learning Path</h2>
+      <p>Complete the form below to receive AI-generated recommendations tailored to your learning style and progress.</p>
+      
+      <form id="recommendForm">
+        <div class="form-group">
+          <label for="score">Current Proficiency Score (0-100)</label>
+          <input type="number" id="score" name="score" min="0" max="100" required>
+        </div>
+        
+        <div class="form-group">
+          <label for="modules_completed">Modules Completed</label>
+          <input type="number" id="modules_completed" name="modules_completed" min="0" required>
+        </div>
+        
+        <div class="form-group">
+          <label for="avg_time_per_module">Average Time per Module (minutes)</label>
+          <input type="number" id="avg_time_per_module" name="avg_time_per_module" min="1" required>
+        </div>
+        
+        <button type="submit">Generate Recommendations</button>
+      </form>
+      
+      <div class="loading" id="loading">
+        <div class="spinner"></div>
+        Analyzing your learning patterns...
+      </div>
+    </div>
+    
+    <div id="results">
+      <h3>📚 Your Smart Learning Path</h3>
+      <ul id="recommendationsList"></ul>
+    </div>
+    
+    <footer>
+      <p>Powered by NVIDIA Merlin AI | © 2025 DigiLearning Hub</p>
+    </footer>
+  </div>
+
+  <script>
+    document.getElementById('recommendForm').addEventListener('submit', async function(event) {
+      event.preventDefault();
+      
+      // Show loading state
+      document.getElementById('loading').style.display = 'block';
+      document.getElementById('results').style.display = 'none';
+      
+      const formData = new FormData(this);
+      const data = {
+        score: parseFloat(formData.get('score')),
+        modules_completed: parseInt(formData.get('modules_completed')),
+        avg_time_per_module: parseFloat(formData.get('avg_time_per_module')),
+        user_id: 'learner_123'  // In production, this would come from auth/session
+      };
+
+      try {
+        // Simulate API delay for demo purposes
+        await new Promise(resolve => setTimeout(resolve, 1500));
+        
+        // Mock response for demonstration
+        // In production, you would use the fetch API as in your original code
+        const mockRecommendations = [
+          "Advanced Python Programming (Week 1-2)",
+          "Machine Learning Fundamentals (Week 3-4)",
+          "Data Visualization Techniques (Week 5)",
+          "Capstone Project (Week 6)"
+        ];
+        
+        // Display results
+        const recommendationsList = document.getElementById('recommendationsList');
+        recommendationsList.innerHTML = mockRecommendations.map(item => `<li>${item}</li>`).join('');
+        
+        document.getElementById('results').style.display = 'block';
+      } catch (error) {
+        console.error(error);
+        document.getElementById('results').innerHTML = `
+          <h3>❌ Recommendation Error</h3>
+          <p>We couldn't generate your learning path at this time. Please try again later.</p>
+        `;
+        document.getElementById('results').style.display = 'block';
+      } finally {
+        document.getElementById('loading').style.display = 'none';
+      }
+    });
+  </script>
+</body>
+</html>
